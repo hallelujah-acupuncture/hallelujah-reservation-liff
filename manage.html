@@ -140,7 +140,7 @@
   <div class="status-msg" id="loading">読み込んでいます…</div>
 </div>
 <div class="legend">
-  <span><span class="dot open"></span>開放</span>
+  <span><span class="dot open"></span>予約可</span>
   <span><span class="dot consult"></span>要相談</span>
   <span>日付タップで個別設定</span>
 </div>
@@ -331,7 +331,7 @@ function openDayModal(dateStr) {
       radioOption('要相談', currentStatus) +
     '</div>' +
     '<div id="openFields" style="display:' + (currentStatus === '開放' ? 'block' : 'none') + ';">' +
-      '<label>開放する時間(1時間ずつ個別に選択)</label>' +
+      '<label>予約可能にする時間(1時間ずつ個別に選択)</label>' +
       '<div class="status-radio">' + hourCheckboxes + '</div>' +
       '<label>会場</label><input type="text" id="venue" value="' + currentVenue + '">' +
     '</div>' +
@@ -346,14 +346,14 @@ function openDayModal(dateStr) {
   });
 }
 
-const STATUS_HINT = { '非開放': '予約不可', '開放': '予約可', '要相談': '相談のみ' };
+const STATUS_LABEL = { '非開放': '予約不可', '開放': '予約可', '要相談': '相談のみ' };
 
 function radioOption(value, current) {
   const checked = value === current ? 'checked' : '';
   return '<label class="' + (value === current ? 'active' : '') + '">' +
     '<input type="radio" name="dayStatus" value="' + value + '" ' + checked +
     ' onchange="document.querySelectorAll(\'.status-radio label\').forEach(l=>l.classList.remove(\'active\')); this.closest(\'label\').classList.add(\'active\');">' +
-    '<span>' + value + '<br><span style="font-size:10px; color:var(--text-sub);">(' + STATUS_HINT[value] + ')</span></span></label>';
+    '<span>' + STATUS_LABEL[value] + '</span></label>';
 }
 
 async function saveDay(dateStr) {
