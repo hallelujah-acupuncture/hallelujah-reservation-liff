@@ -128,7 +128,30 @@ let currentYear, currentMonth;
 let daysData = {};
 let selectedDate = null;
 
+/**
+ * LIFF SDKはid_tokenをlocalStorageにキャッシュし、有効期限が切れても
+ * 自動更新しない仕様のため、期限切れの場合は保存データを削除して
+ * liff.init()に新しいトークンを取得させる。
+ */
+function clearExpiredIdTokenIfNeeded() {
+  const keyPrefix = 'LIFF_STORE:' + LIFF_ID + ':';
+  const decoded = localStorage.getItem(keyPrefix + 'decodedIDToken');
+  if (!decoded) return;
+  try {
+    const payload = JSON.parse(decoded);
+    if (Date.now() > payload.exp * 1000) {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.indexOf(keyPrefix) === 0) {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+  } catch (e) { /* パース失敗時は何もしない */ }
+}
+
 async function init() {
+  clearExpiredIdTokenIfNeeded();
   await liff.init({ liffId: LIFF_ID });
   if (!liff.isLoggedIn()) {
     liff.login();
@@ -146,6 +169,8 @@ async function init() {
 function pad(n) { return String(n).padStart(2, '0'); }
 
 async function loadMonth() {
+  clearExpiredIdTokenIfNeeded();
+  await liff.init({ liffId: LIFF_ID });
   const idToken = liff.getIDToken();
   const res = await fetch(API_URL + '?action=listSlotsAdmin&year=' + currentYear + '&month=' + currentMonth + '&idToken=' + encodeURIComponent(idToken));
   const json = await res.json();
@@ -282,6 +307,8 @@ function radioOption(value, current) {
 }
 
 async function saveDay() {
+  clearExpiredIdTokenIfNeeded();
+  await liff.init({ liffId: LIFF_ID });
   const status = document.querySelector('input[name="dayStatus"]:checked').value;
   const payload = {
     action: 'setDayStatus',
@@ -338,6 +365,8 @@ function openBulkEditor() {
 }
 
 async function saveBulk() {
+  clearExpiredIdTokenIfNeeded();
+  await liff.init({ liffId: LIFF_ID });
   const payload = {
     action: 'bulkApplyWeekday',
     idToken: liff.getIDToken(),
@@ -374,6 +403,9 @@ async function submitManualReserve() {
     alert('お名前を入力してください');
     return;
   }
+
+  clearExpiredIdTokenIfNeeded();
+  await liff.init({ liffId: LIFF_ID });
 
   const payload = {
     action: 'manualReserve',
