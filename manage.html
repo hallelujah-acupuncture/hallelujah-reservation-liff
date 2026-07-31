@@ -73,7 +73,7 @@
   .day-cell.open { background: #f2fbf6; }
   .day-num { font-size: 11px; color: var(--text-sub); text-align: right; flex-shrink: 0; }
   .day-cell.consult .day-num { color: var(--amber); font-weight: 600; }
-  .entry-list { flex: 1; overflow-y: auto; font-size: 11px; line-height: 1.5; margin-top: 2px; }
+  .entry-list { flex: 1; overflow-y: auto; font-size: 10px; line-height: 1.4; margin-top: 2px; }
   .entry-list div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
   .entry-list .consult-tag { color: var(--amber); }
   .legend { display: flex; gap: 12px; padding: 6px 12px; font-size: 11px; color: var(--text-sub); flex-shrink: 0; background: #fff; border-top: 1px solid var(--border); flex-wrap: wrap; }
@@ -219,7 +219,12 @@ async function changeMonth(diff) {
 
 function truncateName(name) {
   if (!name) return '';
-  return name.length > 6 ? name.slice(0, 6) + '...' : name;
+  return name.length > 8 ? name.slice(0, 8) + '...' : name;
+}
+
+/** '10:00' → '10' のように、分が00の場合は時のみの表示にする */
+function shortTime(time) {
+  return time.endsWith(':00') ? time.slice(0, time.indexOf(':')) : time;
 }
 
 function dayCellClass(info) {
@@ -258,7 +263,7 @@ function renderCalendar() {
       entriesHtml = info.reservations.map(r => {
         const label = r.time === '(要相談)'
           ? '<span class="consult-tag">要相談</span> ' + truncateName(r.name)
-          : r.time + ' ' + truncateName(r.name);
+          : shortTime(r.time) + ':' + truncateName(r.name);
         return '<div>' + label + '</div>';
       }).join('');
     }
@@ -300,14 +305,21 @@ function openDayModal(dateStr) {
   const currentVenue = (info && info.venue) ? info.venue : 'わっか';
   const booked = bookedTimes.length > 0;
 
+  // 予約済み時間 → 氏名(無ければ表示名)の対応表を作る
+  const nameByTime = {};
+  if (info && info.reservations) {
+    info.reservations.forEach(r => { nameByTime[r.time] = r.name; });
+  }
+
   const hourCheckboxes = HOUR_OPTIONS.map(time => {
     const isOpen = openTimes.indexOf(time) !== -1;
     const isBooked = bookedTimes.indexOf(time) !== -1;
+    const bookedLabel = isBooked ? '(' + (nameByTime[time] || '予約済') + ')' : '';
     return '<label class="' + (isOpen ? 'active' : '') + '">' +
       '<input type="checkbox" name="hourSlot" value="' + time + '"' +
         (isOpen ? ' checked' : '') + (isBooked ? ' disabled' : '') +
         ' onchange="this.closest(\'label\').classList.toggle(\'active\', this.checked)">' +
-      '<span>' + time + (isBooked ? '(予約済)' : '') + '</span></label>';
+      '<span>' + time + bookedLabel + '</span></label>';
   }).join('');
 
   const body =
@@ -334,12 +346,14 @@ function openDayModal(dateStr) {
   });
 }
 
+const STATUS_HINT = { '非開放': '予約不可', '開放': '予約可', '要相談': '相談のみ' };
+
 function radioOption(value, current) {
   const checked = value === current ? 'checked' : '';
   return '<label class="' + (value === current ? 'active' : '') + '">' +
     '<input type="radio" name="dayStatus" value="' + value + '" ' + checked +
     ' onchange="document.querySelectorAll(\'.status-radio label\').forEach(l=>l.classList.remove(\'active\')); this.closest(\'label\').classList.add(\'active\');">' +
-    '<span>' + value + '</span></label>';
+    '<span>' + value + '<br><span style="font-size:10px; color:var(--text-sub);">(' + STATUS_HINT[value] + ')</span></span></label>';
 }
 
 async function saveDay(dateStr) {
