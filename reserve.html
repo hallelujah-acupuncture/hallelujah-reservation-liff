@@ -18,6 +18,9 @@
     --bg: #f7f7f7;
   }
   * { box-sizing: border-box; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: 0.6; }
+  [onclick] { cursor: pointer; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -208,6 +211,7 @@ async function changeMonth(diff) {
   currentMonth += diff;
   if (currentMonth < 1) { currentMonth = 12; currentYear--; }
   if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+  document.getElementById('app').innerHTML = '<div class="status-msg">読み込んでいます…</div>';
   await loadMonth();
   renderCalendarView();
 }
