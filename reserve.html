@@ -90,7 +90,7 @@
   .time-btn.selected { border-color: var(--line-green); background: #e6f9ee; }
 
   label { font-size: 13px; color: var(--text-sub); display: block; margin-bottom: 6px; }
-  textarea {
+  textarea, input[type="text"] {
     width: 100%;
     padding: 10px;
     border: 1px solid var(--border);
@@ -281,6 +281,8 @@ function renderSymptomForm() {
         '<div class="profile-hint">LINEプロフィールより取得</div>' +
       '</div>' +
     '</div>' +
+    '<label>お名前(LINEの表示名が本名と異なる場合のみご入力ください・任意)</label>' +
+    '<input type="text" id="realName" placeholder="例:山田 太郎">' +
     '<label>症状・ご相談内容</label>' +
     '<textarea id="symptom" rows="4" placeholder="例:肩こりがひどく、デスクワーク中心の生活です"></textarea>' +
     '<button class="submit-btn" onclick="submitReservation()">この内容で予約する</button>' +
@@ -310,7 +312,8 @@ async function submitReservation() {
       idToken: idToken,
       date: selectedDate,
       time: selectedTime || null,
-      symptom: symptom
+      symptom: symptom,
+      realName: document.getElementById('realName').value.trim()
     })
   });
   const json = await res.json();
