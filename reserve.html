@@ -275,6 +275,8 @@ async function submitReservation() {
   btn.disabled = true;
   btn.textContent = '送信中…';
 
+  // 送信直前にliffを再初期化し、有効期限切れしていない新しいid_tokenを取得する
+  await liff.init({ liffId: LIFF_ID });
   const idToken = liff.getIDToken();
   const res = await fetch(API_URL, {
     method: 'POST',
