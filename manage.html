@@ -235,6 +235,19 @@ function openDayEditor(dateStr) {
       '<span>' + time + (isBooked ? '(予約済)' : '') + '</span></label>';
   }).join('');
 
+  const availableTimes = (info && info.slots) ? info.slots.filter(s => s.status === '空き').map(s => s.time) : [];
+  const manualSection = availableTimes.length > 0
+    ? '<div class="card">' +
+        '<div style="font-size:14px; font-weight:600; margin-bottom:8px;">LINE以外(電話等)の予約を手動登録</div>' +
+        '<label>時間</label>' +
+        '<select id="manualTime">' + availableTimes.map(t => '<option value="' + t + '">' + t + '</option>').join('') + '</select>' +
+        '<label>お名前</label><input type="text" id="manualName" placeholder="例:山田 太郎">' +
+        '<label>連絡先(任意・電話番号など)</label><input type="text" id="manualContact" placeholder="例:090-xxxx-xxxx">' +
+        '<label>症状・ご相談内容</label><textarea id="manualSymptom" rows="3"></textarea>' +
+        '<button class="btn btn-primary" id="manualReserveBtn" onclick="submitManualReserve()">この内容で登録</button>' +
+      '</div>'
+    : '';
+
   document.getElementById('editorArea').innerHTML =
     '<div class="card">' +
       '<div style="font-size:14px; font-weight:600; margin-bottom:8px;">' + dateStr + ' の設定</div>' +
@@ -251,7 +264,8 @@ function openDayEditor(dateStr) {
       '</div>' +
       '<button class="btn btn-primary" id="saveDayBtn" onclick="saveDay()">保存</button>' +
       '<button class="btn btn-secondary" onclick="document.getElementById(\'editorArea\').innerHTML=\'\'">閉じる</button>' +
-    '</div>';
+    '</div>' +
+    manualSection;
 
   document.querySelectorAll('input[name="dayStatus"]').forEach(el => {
     el.addEventListener('change', () => {
@@ -351,6 +365,41 @@ async function saveBulk() {
     alert('反映できませんでした(' + json.error + ')');
     btn.disabled = false;
     btn.textContent = 'この内容で一括反映';
+  }
+}
+
+async function submitManualReserve() {
+  const name = document.getElementById('manualName').value.trim();
+  if (!name) {
+    alert('お名前を入力してください');
+    return;
+  }
+
+  const payload = {
+    action: 'manualReserve',
+    idToken: liff.getIDToken(),
+    date: selectedDate,
+    time: document.getElementById('manualTime').value,
+    name: name,
+    contact: document.getElementById('manualContact').value.trim(),
+    symptom: document.getElementById('manualSymptom').value.trim()
+  };
+
+  const btn = document.getElementById('manualReserveBtn');
+  btn.disabled = true;
+  btn.textContent = '登録中…';
+
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+  const json = await res.json();
+
+  if (json.ok) {
+    alert('登録しました');
+    await loadMonth();
+    renderCalendarView();
+  } else {
+    alert('登録できませんでした(' + json.error + ')');
+    btn.disabled = false;
+    btn.textContent = 'この内容で登録';
   }
 }
 
