@@ -76,14 +76,19 @@
   .entry-list { flex: 1; overflow-y: auto; margin-top: 2px; display: flex; flex-direction: column; gap: 2px; }
   .entry-chip {
     background: #ffffffcc; border-left: 3px solid #06883f; border-radius: 3px;
-    padding: 1px 4px; overflow: hidden;
+    padding: 1px 4px; overflow: hidden; white-space: nowrap;
+    font-size: 10px; line-height: 1.4;
   }
   .entry-chip.consult { border-left-color: var(--amber); }
-  .entry-chip .entry-time { font-size: 9px; font-weight: 700; color: #06883f; line-height: 1.3; }
+  .entry-chip .entry-time { font-weight: 700; color: #06883f; }
   .entry-chip.consult .entry-time { color: var(--amber); }
-  .entry-chip .entry-name {
-    font-size: 10px; color: var(--text-main); line-height: 1.2;
-    word-break: break-all; white-space: normal;
+  .entry-chip .entry-name { color: var(--text-main); }
+  /* スマホ幅ではLINE表示名の短縮、PC幅ではLINE表示名フルを表示 */
+  .entry-name-full { display: none; }
+  .entry-name-short { display: inline; }
+  @media (min-width: 700px) {
+    .entry-name-full { display: inline; }
+    .entry-name-short { display: none; }
   }
   .legend { display: flex; gap: 12px; padding: 6px 12px; font-size: 11px; color: var(--text-sub); flex-shrink: 0; background: #fff; border-top: 1px solid var(--border); flex-wrap: wrap; }
   .legend span { display: inline-flex; align-items: center; gap: 4px; }
@@ -271,10 +276,11 @@ function renderCalendar() {
     if (info && info.reservations) {
       entriesHtml = info.reservations.map(r => {
         const isConsult = r.time === '(要相談)';
-        const timeLabel = isConsult ? '要相談' : r.time;
+        const timeLabel = isConsult ? '相談' : shortTime(r.time);
         return '<div class="entry-chip' + (isConsult ? ' consult' : '') + '">' +
-          '<div class="entry-time">' + timeLabel + '</div>' +
-          '<div class="entry-name">' + truncateName(r.name) + '</div>' +
+          '<span class="entry-time">' + timeLabel + '</span> ' +
+          '<span class="entry-name entry-name-full">' + r.nameFull + '</span>' +
+          '<span class="entry-name entry-name-short">' + truncateName(r.nameShort) + '</span>' +
         '</div>';
       }).join('');
     }
@@ -316,10 +322,10 @@ function openDayModal(dateStr) {
   const currentVenue = (info && info.venue) ? info.venue : 'わっか';
   const booked = bookedTimes.length > 0;
 
-  // 予約済み時間 → 氏名(無ければ表示名)の対応表を作る
+  // 予約済み時間 → 表示名の対応表を作る
   const nameByTime = {};
   if (info && info.reservations) {
-    info.reservations.forEach(r => { nameByTime[r.time] = r.name; });
+    info.reservations.forEach(r => { nameByTime[r.time] = r.nameFull; });
   }
 
   const hourCheckboxes = HOUR_OPTIONS.map(time => {
