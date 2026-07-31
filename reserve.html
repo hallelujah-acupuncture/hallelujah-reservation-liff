@@ -143,7 +143,30 @@ let slotsByDate = {};
 let selectedDate = null;
 let selectedTime = null;
 
+/**
+ * LIFF SDKはid_tokenをlocalStorageにキャッシュし、有効期限が切れても
+ * 自動更新しない仕様のため、期限切れの場合は保存データを削除して
+ * liff.init()に新しいトークンを取得させる。
+ */
+function clearExpiredIdTokenIfNeeded() {
+  const keyPrefix = 'LIFF_STORE:' + LIFF_ID + ':';
+  const decoded = localStorage.getItem(keyPrefix + 'decodedIDToken');
+  if (!decoded) return;
+  try {
+    const payload = JSON.parse(decoded);
+    if (Date.now() > payload.exp * 1000) {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.indexOf(keyPrefix) === 0) {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+  } catch (e) { /* パース失敗時は何もしない */ }
+}
+
 async function init() {
+  clearExpiredIdTokenIfNeeded();
   await liff.init({ liffId: LIFF_ID });
   if (!liff.isLoggedIn()) {
     liff.login();
@@ -276,6 +299,7 @@ async function submitReservation() {
   btn.textContent = '送信中…';
 
   // 送信直前にliffを再初期化し、有効期限切れしていない新しいid_tokenを取得する
+  clearExpiredIdTokenIfNeeded();
   await liff.init({ liffId: LIFF_ID });
   const idToken = liff.getIDToken();
   const res = await fetch(API_URL, {
