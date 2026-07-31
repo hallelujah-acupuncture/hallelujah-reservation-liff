@@ -152,7 +152,7 @@ function render(template) {
     '<div class="card">' +
       statusNote +
       '<div class="info-box">' +
-        '<div class="name">' + r.displayName + ' 様</div>' +
+        '<div class="name">' + r.displayName + ' 様' + (r.realName ? '(氏名:' + r.realName + ')' : '') + '</div>' +
         '<div>' + r.date + ' ' + r.time + '〜</div>' +
         '<div class="symptom">' + r.symptom + '</div>' +
       '</div>' +
