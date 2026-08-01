@@ -124,6 +124,13 @@ async function init() {
 
   const params = new URLSearchParams(location.search);
   reservationId = params.get('reservationId');
+
+  // 稀に liff.state 経由でパラメータが渡されるケースへのフォールバック
+  if (!reservationId && params.get('liff.state')) {
+    const stateParams = new URLSearchParams(params.get('liff.state').replace(/^\?/, ''));
+    reservationId = stateParams.get('reservationId');
+  }
+
   if (!reservationId) {
     document.getElementById('app').innerHTML = '<div class="status-msg">予約IDが指定されていません。</div>';
     return;
@@ -146,7 +153,8 @@ function render(template) {
   const r = reservationData;
   const statusNote =
     r.status === '確定' ? '<p style="color:#06883f; font-size:13px; margin:0 0 12px;">※この予約はすでに確定済みです</p>' :
-    r.status === 'キャンセル' ? '<p style="color:#c00; font-size:13px; margin:0 0 12px;">※この予約はすでに見送り済みです</p>' : '';
+    r.status === 'キャンセル' ? '<p style="color:#c00; font-size:13px; margin:0 0 12px;">※この予約はすでに見送り済みです</p>' :
+    r.status !== '仮受付' ? '<p style="color:#c00; font-size:13px; margin:0 0 12px;">※現在のステータス「' + r.status + '」のため操作できません</p>' : '';
 
   document.getElementById('app').innerHTML =
     '<div class="card">' +
