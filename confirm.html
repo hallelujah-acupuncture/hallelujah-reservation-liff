@@ -192,11 +192,17 @@ async function send() {
   const json = await res.json();
 
   if (json.ok) {
-    document.getElementById('app').innerHTML = '<div class="status-msg">送信しました。</div>';
+    document.getElementById('app').innerHTML =
+      '<div class="status-msg">送信しました。</div>' +
+      '<button class="btn btn-primary" onclick="goToManage()">枠設定(管理者用)に移動</button>';
   } else {
     alert('送信できませんでした(' + json.error + ')');
     location.reload();
   }
+}
+
+function goToManage() {
+  location.href = 'https://liff.line.me/2010906491-OuYRJZKU';
 }
 
 async function cancelReservation() {
