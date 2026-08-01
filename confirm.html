@@ -194,7 +194,7 @@ async function send() {
   if (json.ok) {
     document.getElementById('app').innerHTML =
       '<div class="status-msg">送信しました。</div>' +
-      '<button class="btn btn-primary" onclick="goToManage()">枠設定(管理者用)に移動</button>';
+      '<button class="btn btn-primary" style="width:auto; display:block; margin:14px auto 0; padding:12px 24px;" onclick="goToManage()">枠設定(管理者用)に移動</button>';
   } else {
     alert('送信できませんでした(' + json.error + ')');
     location.reload();
