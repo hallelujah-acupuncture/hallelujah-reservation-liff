@@ -345,7 +345,7 @@ function openDayModal(dateStr) {
 
     if (isBooked) {
       const label = nameByTime[time] || '予約済';
-      return '<label class="active" style="background:#ffe9e9; border-color:#e6a3a3;" ' +
+      return '<label class="active" style="background:#e6f9ee; border-color:#06883f;" ' +
         'onclick="cancelBookedSlot(\'' + dateStr + '\', \'' + time + '\')">' +
         '<span>' + time + '(' + label + ')</span></label>';
     }
@@ -399,9 +399,12 @@ async function cancelBookedSlot(dateStr, time) {
     return;
   }
 
-  if (!confirm(dateStr + ' ' + time + ' ' + entry.nameFull + '様の予約を見送り(キャンセル)にしますか?')) return;
+  const isConfirmed = entry.status === '確定';
+  const actionLabel = isConfirmed ? 'キャンセル' : '見送り';
 
-  const comment = prompt('見送る理由があれば入力してください(任意・お客様には送信されません)', '');
+  if (!confirm(dateStr + ' ' + time + ' ' + entry.nameFull + '様の予約を' + actionLabel + 'にしますか?')) return;
+
+  const comment = prompt(actionLabel + '理由があれば入力してください(任意・お客様には送信されません)', '');
   if (comment === null) return; // 理由入力もキャンセルされたら中断
 
   await ensureFreshIdToken();
@@ -420,7 +423,7 @@ async function cancelBookedSlot(dateStr, time) {
     await loadMonth();
     renderCalendar();
     closeModal();
-    alert('見送りにしました。枠は再度予約可能になりました。');
+    alert(actionLabel + 'にしました。枠は再度予約可能になりました。');
   } else {
     alert('処理できませんでした(' + json.error + ')');
   }
