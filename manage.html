@@ -342,17 +342,24 @@ function openDayModal(dateStr) {
   const hourCheckboxes = HOUR_OPTIONS.map(time => {
     const isOpen = openTimes.indexOf(time) !== -1;
     const isBooked = bookedTimes.indexOf(time) !== -1;
-    const bookedLabel = isBooked ? '(' + (nameByTime[time] || '予約済') + ')' : '';
+
+    if (isBooked) {
+      const label = nameByTime[time] || '予約済';
+      return '<label class="active" style="background:#ffe9e9; border-color:#e6a3a3;" ' +
+        'onclick="cancelBookedSlot(\'' + dateStr + '\', \'' + time + '\')">' +
+        '<span>' + time + '(' + label + ')</span></label>';
+    }
+
     return '<label class="' + (isOpen ? 'active' : '') + '">' +
       '<input type="checkbox" name="hourSlot" value="' + time + '"' +
-        (isOpen ? ' checked' : '') + (isBooked ? ' disabled' : '') +
+        (isOpen ? ' checked' : '') +
         ' onchange="this.closest(\'label\').classList.toggle(\'active\', this.checked)">' +
-      '<span>' + time + bookedLabel + '</span></label>';
+      '<span>' + time + '</span></label>';
   }).join('');
 
   const body =
     '<div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">' + dateStr + '</div>' +
-    (booked ? '<div class="warn-note">予約済み(グレー表示)の時間は解除できません。</div>' : '') +
+    (booked ? '<div class="warn-note">予約済み(赤色表示)の時間をタップすると見送り(キャンセル)できます。</div>' : '') +
     '<div class="status-radio" id="statusRadio">' +
       radioOption('非開放', currentStatus) +
       radioOption('開放', currentStatus) +
@@ -382,6 +389,41 @@ function radioOption(value, current) {
     '<input type="radio" name="dayStatus" value="' + value + '" ' + checked +
     ' onchange="document.querySelectorAll(\'.status-radio label\').forEach(l=>l.classList.remove(\'active\')); this.closest(\'label\').classList.add(\'active\');">' +
     '<span>' + STATUS_LABEL[value] + '</span></label>';
+}
+
+async function cancelBookedSlot(dateStr, time) {
+  const info = daysData[dateStr];
+  const entry = info && info.reservations && info.reservations.find(r => r.time === time);
+  if (!entry || !entry.reservationId) {
+    alert('この予約の情報を取得できませんでした。');
+    return;
+  }
+
+  if (!confirm(dateStr + ' ' + time + ' ' + entry.nameFull + '様の予約を見送り(キャンセル)にしますか?')) return;
+
+  const comment = prompt('見送る理由があれば入力してください(任意・お客様には送信されません)', '');
+  if (comment === null) return; // 理由入力もキャンセルされたら中断
+
+  await ensureFreshIdToken();
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'cancel',
+      reservationId: entry.reservationId,
+      comment: comment,
+      idToken: liff.getIDToken()
+    })
+  });
+  const json = await res.json();
+
+  if (json.ok) {
+    await loadMonth();
+    renderCalendar();
+    closeModal();
+    alert('見送りにしました。枠は再度予約可能になりました。');
+  } else {
+    alert('処理できませんでした(' + json.error + ')');
+  }
 }
 
 async function saveDay(dateStr) {
