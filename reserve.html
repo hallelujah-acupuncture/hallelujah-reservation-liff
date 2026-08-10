@@ -331,7 +331,8 @@ async function submitReservation() {
 
   if (json.ok) {
     document.getElementById('app').innerHTML =
-      '<div class="status-msg">予約を受け付けました。<br>確定次第LINEでご連絡します。</div>' +
+      '<div class="status-msg">予約を受け付けました。<br>確定次第LINEでご連絡します。<br><br>' +
+      '<span style="font-size:12px;">※キャンセルをご希望の場合は、公式アカウントよりご連絡ください。</span></div>' +
       '<button class="submit-btn" onclick="backToCalendar()">予約画面に戻る</button>';
   } else {
     alert('予約できませんでした(' + json.error + ')。お手数ですが最初からやり直してください。');
