@@ -391,7 +391,7 @@ function radioOption(value, current) {
     '<span>' + STATUS_LABEL[value] + '</span></label>';
 }
 
-async function cancelBookedSlot(dateStr, time) {
+function cancelBookedSlot(dateStr, time) {
   const info = daysData[dateStr];
   const entry = info && info.reservations && info.reservations.find(r => r.time === time);
   if (!entry || !entry.reservationId) {
@@ -402,17 +402,32 @@ async function cancelBookedSlot(dateStr, time) {
   const isConfirmed = entry.status === '確定';
   const actionLabel = isConfirmed ? 'キャンセル' : '見送り';
 
-  if (!confirm(dateStr + ' ' + time + ' ' + entry.nameFull + '様の予約を' + actionLabel + 'にしますか?')) return;
+  const body =
+    '<p style="font-size:14px; margin:0 0 12px;">' + dateStr + ' ' + time + '<br>' +
+      '<strong>' + entry.nameFull + '</strong> 様の予約を' + actionLabel + 'にしますか?</p>' +
+    '<label>' + actionLabel + '理由(任意・お客様には送信されません)</label>' +
+    '<textarea id="cancelComment" rows="4"></textarea>' +
+    '<div class="row2" style="margin-top:14px;">' +
+      '<button class="btn btn-secondary" style="margin-top:0;" onclick="closeModal()">いいえ</button>' +
+      '<button class="btn btn-primary" id="cancelConfirmBtn" style="margin-top:0;" ' +
+        'onclick="submitCancelBooked(\'' + entry.reservationId + '\', \'' + actionLabel + '\')">はい、' + actionLabel + 'にする</button>' +
+    '</div>';
 
-  const comment = prompt(actionLabel + '理由があれば入力してください(任意・お客様には送信されません)', '');
-  if (comment === null) return; // 理由入力もキャンセルされたら中断
+  showModal(actionLabel + 'の確認', body);
+}
+
+async function submitCancelBooked(reservationId, actionLabel) {
+  const comment = document.getElementById('cancelComment').value.trim();
+  const btn = document.getElementById('cancelConfirmBtn');
+  btn.disabled = true;
+  btn.textContent = '処理中…';
 
   await ensureFreshIdToken();
   const res = await fetch(API_URL, {
     method: 'POST',
     body: JSON.stringify({
       action: 'cancel',
-      reservationId: entry.reservationId,
+      reservationId: reservationId,
       comment: comment,
       idToken: liff.getIDToken()
     })
@@ -426,6 +441,8 @@ async function cancelBookedSlot(dateStr, time) {
     alert(actionLabel + 'にしました。枠は再度予約可能になりました。');
   } else {
     alert('処理できませんでした(' + json.error + ')');
+    btn.disabled = false;
+    btn.textContent = 'はい、' + actionLabel + 'にする';
   }
 }
 
