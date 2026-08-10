@@ -94,13 +94,13 @@ let reservationData = null;
 
 /**
  * LIFF SDKはid_tokenをlocalStorageにキャッシュし、有効期限が切れても
- * 自動更新しない仕様のため、期限切れの場合は保存データを削除して
- * liff.init()に新しいトークンを取得させる。
+ * 自動更新しない仕様のため、期限切れの場合は保存データを削除する。
+ * 戻り値: 期限切れを検知して削除した場合はtrue、それ以外はfalse
  */
 function clearExpiredIdTokenIfNeeded() {
   const keyPrefix = 'LIFF_STORE:' + LIFF_ID + ':';
   const decoded = localStorage.getItem(keyPrefix + 'decodedIDToken');
-  if (!decoded) return;
+  if (!decoded) return false;
   try {
     const payload = JSON.parse(decoded);
     if (Date.now() > payload.exp * 1000) {
@@ -110,8 +110,20 @@ function clearExpiredIdTokenIfNeeded() {
           localStorage.removeItem(key);
         }
       }
+      return true;
     }
   } catch (e) { /* パース失敗時は何もしない */ }
+  return false;
+}
+
+/**
+ * トークンが実際に期限切れのときだけ liff.init() をやり直す。
+ * 期限内であれば何もしない(LINEとの通信を減らして体感速度を上げるため)。
+ */
+async function ensureFreshIdToken() {
+  if (clearExpiredIdTokenIfNeeded()) {
+    await liff.init({ liffId: LIFF_ID });
+  }
 }
 
 async function init() {
@@ -182,8 +194,7 @@ async function send() {
 
   setButtonsBusy('送信中…');
 
-  clearExpiredIdTokenIfNeeded();
-  await liff.init({ liffId: LIFF_ID });
+  await ensureFreshIdToken();
 
   const res = await fetch(API_URL, {
     method: 'POST',
@@ -211,8 +222,7 @@ async function cancelReservation() {
 
   setButtonsBusy('処理中…');
 
-  clearExpiredIdTokenIfNeeded();
-  await liff.init({ liffId: LIFF_ID });
+  await ensureFreshIdToken();
 
   const res = await fetch(API_URL, {
     method: 'POST',
