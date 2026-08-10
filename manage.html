@@ -173,7 +173,7 @@ let daysData = {};
 function clearExpiredIdTokenIfNeeded() {
   const keyPrefix = 'LIFF_STORE:' + LIFF_ID + ':';
   const decoded = localStorage.getItem(keyPrefix + 'decodedIDToken');
-  if (!decoded) return;
+  if (!decoded) return false;
   try {
     const payload = JSON.parse(decoded);
     if (Date.now() > payload.exp * 1000) {
@@ -181,13 +181,24 @@ function clearExpiredIdTokenIfNeeded() {
         const key = localStorage.key(i);
         if (key && key.indexOf(keyPrefix) === 0) localStorage.removeItem(key);
       }
+      return true;
     }
   } catch (e) {}
+  return false;
 }
 
+// ページ読み込み時専用(必ずliff.init()する)
 async function refreshLiff() {
   clearExpiredIdTokenIfNeeded();
   await liff.init({ liffId: LIFF_ID });
+}
+
+// ページ読み込み後の各操作の直前に使う。
+// トークンが実際に期限切れのときだけliff.init()をやり直す(通信を減らして体感速度を上げる)。
+async function ensureFreshIdToken() {
+  if (clearExpiredIdTokenIfNeeded()) {
+    await liff.init({ liffId: LIFF_ID });
+  }
 }
 
 async function init() {
@@ -206,7 +217,7 @@ async function init() {
 function pad(n) { return String(n).padStart(2, '0'); }
 
 async function loadMonth(year, month) {
-  await refreshLiff();
+  await ensureFreshIdToken();
   const y = year || currentYear;
   const m = month || currentMonth;
   const idToken = liff.getIDToken();
@@ -389,7 +400,7 @@ async function saveDay(dateStr) {
   btn.disabled = true;
   btn.textContent = '保存中…';
 
-  await refreshLiff();
+  await ensureFreshIdToken();
   payload.idToken = liff.getIDToken();
 
   const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -442,7 +453,7 @@ async function saveBulk() {
   btn.disabled = true;
   btn.textContent = '反映中…';
 
-  await refreshLiff();
+  await ensureFreshIdToken();
   payload.idToken = liff.getIDToken();
 
   const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -517,7 +528,7 @@ async function submitManualReserve() {
   btn.disabled = true;
   btn.textContent = '登録中…';
 
-  await refreshLiff();
+  await ensureFreshIdToken();
   payload.idToken = liff.getIDToken();
 
   const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
