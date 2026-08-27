@@ -285,28 +285,24 @@ function selectTime(time) {
 }
 
 function renderSymptomForm() {
+  const isInquiry = selectedTime === '(要相談)';
   return (
-    '<div class="profile-row">' +
-      '<div class="avatar">' + (liffProfile.displayName || '').slice(0,1) + '</div>' +
-      '<div>' +
-        '<div class="profile-name">' + liffProfile.displayName + '</div>' +
-      '</div>' +
-    '</div>' +
-    '<label>お名前(LINEの表示名が本名と異なる場合のみご入力ください・任意)</label>' +
+    '<label>お名前</label>' +
     '<input type="text" id="realName" placeholder="例:山田 太郎">' +
-    '<label>症状・ご相談内容</label>' +
+    '<label>症状・ご相談内容(任意)</label>' +
     '<textarea id="symptom" rows="4" placeholder="例:肩こりがひどく、デスクワーク中心の生活です"></textarea>' +
-    '<button class="submit-btn" onclick="submitReservation()">この内容で予約する</button>' +
+    '<button class="submit-btn" onclick="submitReservation()">' + (isInquiry ? 'この内容で問い合わせする' : 'この内容で予約する') + '</button>' +
     '<p class="note">確定次第LINEでご連絡します</p>'
   );
 }
 
 async function submitReservation() {
-  const symptom = document.getElementById('symptom').value.trim();
-  if (!symptom) {
-    alert('症状・ご相談内容を入力してください');
+  const realName = document.getElementById('realName').value.trim();
+  if (!realName) {
+    alert('お名前を入力してください');
     return;
   }
+  const symptom = document.getElementById('symptom').value.trim();
 
   const btn = document.querySelector('.submit-btn');
   btn.disabled = true;
@@ -323,7 +319,7 @@ async function submitReservation() {
       date: selectedDate,
       time: selectedTime || null,
       symptom: symptom,
-      realName: document.getElementById('realName').value.trim()
+      realName: realName
     })
   });
   const json = await res.json();
