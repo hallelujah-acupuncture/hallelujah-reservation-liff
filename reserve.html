@@ -217,7 +217,7 @@ function renderCalendarView() {
     const info = slotsByDate[dateStr];
     let cls = 'day-cell';
     if (info && info.status === '空き' && info.times.length > 0) cls += ' available';
-    else if (info && info.status === '要相談') cls += ' consult';
+    else if (info && info.status === '問い合わせ可能') cls += ' consult';
     cells += '<div class="' + cls + '" data-date="' + dateStr + '"' +
       (info ? ' onclick="selectDate(\'' + dateStr + '\')"' : '') + '>' + d + '</div>';
   }
@@ -236,7 +236,7 @@ function renderCalendarView() {
       '</div>' +
       '<div class="legend">' +
         '<span><span class="dot available"></span>空きあり</span>' +
-        '<span><span class="dot consult"></span>要相談</span>' +
+        '<span><span class="dot consult"></span>問い合わせ可能</span>' +
       '</div>' +
     '</div>' +
     '<div class="card" id="timeCard" style="display:none;"></div>';
@@ -261,8 +261,8 @@ function selectDate(dateStr) {
   const timeCard = document.getElementById('timeCard');
   timeCard.style.display = 'block';
 
-  if (info.status === '要相談') {
-    selectedTime = '(要相談)';
+  if (info.status === '問い合わせ可能') {
+    selectedTime = '(問い合わせ可能)';
     timeCard.innerHTML =
       '<p style="font-size:13px; color:var(--text-sub); margin:0 0 12px;">この日は施術場所確保の都合がありますので、送信後の返信をお待ちください。</p>' +
       renderSymptomForm();
