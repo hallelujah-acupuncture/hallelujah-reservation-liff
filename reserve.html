@@ -264,7 +264,7 @@ function selectDate(dateStr) {
   if (info.status === '要相談') {
     selectedTime = '(要相談)';
     timeCard.innerHTML =
-      '<p style="font-size:13px; color:var(--text-sub); margin:0 0 12px;">この日は会場確保の都合により、確定まで少々お時間をいただく場合があります。</p>' +
+      '<p style="font-size:13px; color:var(--text-sub); margin:0 0 12px;">この日は施術場所確保の都合がありますので、送信後の返信をお待ちください。</p>' +
       renderSymptomForm();
   } else {
     const buttons = info.times.map(t =>
