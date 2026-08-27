@@ -69,14 +69,14 @@
     border-radius: 8px;
     font-size: 13px;
   }
-  .day-cell.available { background: #e6f9ee; color: #06883f; font-weight: 600; }
-  .day-cell.consult { background: #fff3e0; color: #b96a00; font-weight: 600; }
+  .day-cell.available { background: #e8f4fa; color: #4fa9d8; font-weight: 600; }
+  .day-cell.consult { background: #f2e9e4; color: #8b5a3c; font-weight: 600; }
   .day-cell.selected { outline: 2px solid var(--line-green); }
   .legend { display: flex; gap: 14px; margin-top: 10px; font-size: 11px; color: var(--text-sub); }
   .legend span { display: inline-flex; align-items: center; gap: 4px; }
   .dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-  .dot.available { background: #06883f; }
-  .dot.consult { background: #b96a00; }
+  .dot.available { background: #4fa9d8; }
+  .dot.consult { background: #8b5a3c; }
 
   .time-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
   .time-btn {
@@ -217,7 +217,7 @@ function renderCalendarView() {
     const info = slotsByDate[dateStr];
     let cls = 'day-cell';
     if (info && info.status === '空き' && info.times.length > 0) cls += ' available';
-    else if (info && info.status === '問い合わせ可能') cls += ' consult';
+    else if (info && info.status === '要相談') cls += ' consult';
     cells += '<div class="' + cls + '" data-date="' + dateStr + '"' +
       (info ? ' onclick="selectDate(\'' + dateStr + '\')"' : '') + '>' + d + '</div>';
   }
@@ -261,8 +261,8 @@ function selectDate(dateStr) {
   const timeCard = document.getElementById('timeCard');
   timeCard.style.display = 'block';
 
-  if (info.status === '問い合わせ可能') {
-    selectedTime = '(問い合わせ可能)';
+  if (info.status === '要相談') {
+    selectedTime = '(要相談)';
     timeCard.innerHTML =
       '<p style="font-size:13px; color:var(--text-sub); margin:0 0 12px;">この日は施術場所確保の都合がありますので、送信後の返信をお待ちください。</p>' +
       renderSymptomForm();
@@ -290,7 +290,6 @@ function renderSymptomForm() {
       '<div class="avatar">' + (liffProfile.displayName || '').slice(0,1) + '</div>' +
       '<div>' +
         '<div class="profile-name">' + liffProfile.displayName + '</div>' +
-        '<div class="profile-hint">LINEプロフィールより取得</div>' +
       '</div>' +
     '</div>' +
     '<label>お名前(LINEの表示名が本名と異なる場合のみご入力ください・任意)</label>' +
