@@ -16,8 +16,10 @@
     --text-sub: #767676;
     --border: #e5e5e5;
     --bg: #f7f7f7;
-    --amber: #b96a00;
-    --amber-bg: #fff3e0;
+    --open: #4fa9d8;
+    --open-bg: #e8f4fa;
+    --amber: #8b5a3c;
+    --amber-bg: #f2e9e4;
     --red: #c00;
   }
   * { box-sizing: border-box; }
@@ -70,17 +72,17 @@
   }
   .day-cell.empty { border: none; background: transparent; }
   .day-cell.consult { background: var(--amber-bg); }
-  .day-cell.open { background: #f2fbf6; }
+  .day-cell.open { background: var(--open-bg); }
   .day-num { font-size: 11px; color: var(--text-sub); text-align: right; flex-shrink: 0; }
   .day-cell.consult .day-num { color: var(--amber); font-weight: 600; }
   .entry-list { flex: 1; overflow-y: auto; margin-top: 2px; display: flex; flex-direction: column; gap: 2px; }
   .entry-chip {
-    background: #ffffffcc; border-left: 3px solid #06883f; border-radius: 3px;
+    background: #ffffffcc; border-left: 3px solid var(--open); border-radius: 3px;
     padding: 1px 4px; overflow: hidden; white-space: nowrap;
     font-size: 10px; line-height: 1.4;
   }
   .entry-chip.consult { border-left-color: var(--amber); }
-  .entry-chip .entry-time { font-weight: 700; color: #06883f; }
+  .entry-chip .entry-time { font-weight: 700; color: var(--open); }
   .entry-chip.consult .entry-time { color: var(--amber); }
   .entry-chip .entry-name { color: var(--text-main); }
   /* スマホ幅ではLINE表示名の短縮、PC幅ではLINE表示名フルを表示 */
@@ -93,7 +95,7 @@
   .legend { display: flex; gap: 12px; padding: 6px 12px; font-size: 11px; color: var(--text-sub); flex-shrink: 0; background: #fff; border-top: 1px solid var(--border); flex-wrap: wrap; }
   .legend span { display: inline-flex; align-items: center; gap: 4px; }
   .dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-  .dot.open { background: #06883f; }
+  .dot.open { background: var(--open); }
   .dot.consult { background: var(--amber); }
 
   /* モーダル */
@@ -155,7 +157,7 @@
 </div>
 <div class="legend">
   <span><span class="dot open"></span>予約可</span>
-  <span><span class="dot consult"></span>要相談</span>
+  <span><span class="dot consult"></span>問い合わせ可能</span>
   <span>日付タップで個別設定</span>
 </div>
 
@@ -287,7 +289,7 @@ function renderCalendar() {
     if (info && info.reservations) {
       entriesHtml = info.reservations.map(r => {
         const isConsult = r.time === '(要相談)';
-        const timeLabel = isConsult ? '相談' : shortTime(r.time);
+        const timeLabel = isConsult ? '問合せ' : shortTime(r.time);
         return '<div class="entry-chip' + (isConsult ? ' consult' : '') + '">' +
           '<span class="entry-time">' + timeLabel + '</span> ' +
           '<span class="entry-name entry-name-full">' + r.nameFull + '</span>' +
@@ -330,7 +332,7 @@ function openDayModal(dateStr) {
   const currentStatus = info ? (info.status === '要相談' ? '要相談' : (info.slots && info.slots.length > 0 ? '開放' : '非開放')) : '非開放';
   const openTimes = (info && info.slots) ? info.slots.map(s => s.time) : [];
   const bookedTimes = (info && info.slots) ? info.slots.filter(s => s.status === '埋まり').map(s => s.time) : [];
-  const currentVenue = (info && info.venue) ? info.venue : 'わっか';
+  const currentVenue = (info && info.venue) ? info.venue : '横浜市旭区若葉台';
   const booked = bookedTimes.length > 0;
 
   // 予約済み時間 → 表示名の対応表を作る
@@ -381,7 +383,7 @@ function openDayModal(dateStr) {
   });
 }
 
-const STATUS_LABEL = { '非開放': '予約不可', '開放': '予約可', '問い合わせ可能': '問い合わせ可能' };
+const STATUS_LABEL = { '非開放': '予約不可', '開放': '予約可', '要相談': '問い合わせ可能' };
 
 function radioOption(value, current) {
   const checked = value === current ? 'checked' : '';
@@ -492,7 +494,7 @@ function openBulkModal() {
     '</div>' +
     '<div class="row2">' +
       '<div><label>1枠の長さ(分)</label><input type="number" id="bulkSlotDuration" value="60" min="10" step="10"></div>' +
-      '<div><label>会場</label><input type="text" id="bulkVenue" value="わっか"></div>' +
+      '<div><label>会場</label><input type="text" id="bulkVenue" value="横浜市旭区若葉台"></div>' +
     '</div>' +
     '<button class="btn btn-primary" id="saveBulkBtn" onclick="saveBulk()">この内容で一括反映</button>';
 
