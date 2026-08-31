@@ -157,7 +157,7 @@
 </div>
 <div class="legend">
   <span><span class="dot open"></span>予約可</span>
-  <span><span class="dot consult"></span>問い合わせ可能</span>
+  <span><span class="dot consult"></span>問い合わせ</span>
   <span>日付タップで個別設定</span>
 </div>
 
@@ -383,7 +383,7 @@ function openDayModal(dateStr) {
   });
 }
 
-const STATUS_LABEL = { '非開放': '予約不可', '開放': '予約可', '要相談': '問い合わせ可能' };
+const STATUS_LABEL = { '非開放': '予約不可', '開放': '予約可', '要相談': '問い合わせ' };
 
 function radioOption(value, current) {
   const checked = value === current ? 'checked' : '';
