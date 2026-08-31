@@ -236,7 +236,7 @@ function renderCalendarView() {
       '</div>' +
       '<div class="legend">' +
         '<span><span class="dot available"></span>空きあり</span>' +
-        '<span><span class="dot consult"></span>問い合わせ可能</span>' +
+        '<span><span class="dot consult"></span>問い合わせ</span>' +
       '</div>' +
     '</div>' +
     '<div class="card" id="timeCard" style="display:none;"></div>';
@@ -289,10 +289,9 @@ function renderSymptomForm() {
   return (
     '<label>お名前</label>' +
     '<input type="text" id="realName" placeholder="例:山田 太郎">' +
-    '<label>症状・ご相談内容(任意)</label>' +
+    '<label>症状・ご相談内容</label>' +
     '<textarea id="symptom" rows="4" placeholder="例:肩こりがひどく、デスクワーク中心の生活です"></textarea>' +
-    '<button class="submit-btn" onclick="submitReservation()">' + (isInquiry ? 'この内容で問い合わせする' : 'この内容で予約する') + '</button>' +
-    '<p class="note">確定次第LINEでご連絡します</p>'
+    '<button class="submit-btn" onclick="submitReservation()">' + (isInquiry ? 'この内容で問い合わせする' : 'この内容で予約する') + '</button>'
   );
 }
 
