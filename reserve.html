@@ -217,7 +217,7 @@ function renderCalendarView() {
     const info = slotsByDate[dateStr];
     let cls = 'day-cell';
     if (info && info.status === '空き' && info.times.length > 0) cls += ' available';
-    else if (info && info.status === '要相談') cls += ' consult';
+    else if (info && info.status === '問い合わせ') cls += ' consult';
     cells += '<div class="' + cls + '" data-date="' + dateStr + '"' +
       (info ? ' onclick="selectDate(\'' + dateStr + '\')"' : '') + '>' + d + '</div>';
   }
@@ -261,8 +261,8 @@ function selectDate(dateStr) {
   const timeCard = document.getElementById('timeCard');
   timeCard.style.display = 'block';
 
-  if (info.status === '要相談') {
-    selectedTime = '(要相談)';
+  if (info.status === '問い合わせ') {
+    selectedTime = '(問い合わせ)';
     timeCard.innerHTML =
       '<p style="font-size:13px; color:var(--text-sub); margin:0 0 12px;">この日は施術場所確保の都合がありますので、送信後の返信をお待ちください。</p>' +
       renderSymptomForm();
@@ -285,7 +285,7 @@ function selectTime(time) {
 }
 
 function renderSymptomForm() {
-  const isInquiry = selectedTime === '(要相談)';
+  const isInquiry = selectedTime === '(問い合わせ)';
   return (
     '<label>お名前</label>' +
     '<input type="text" id="realName" placeholder="例:山田 太郎">' +
