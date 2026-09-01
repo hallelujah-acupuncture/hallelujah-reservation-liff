@@ -164,7 +164,7 @@ async function init() {
 
 function render(template) {
   const r = reservationData;
-  const isInquiry = r.time === '(要相談)';
+  const isInquiry = r.time === '(問い合わせ)';
   const statusNote =
     r.status === '確定' ? '<p style="color:#06883f; font-size:13px; margin:0 0 12px;">※この予約はすでに確定済みです</p>' :
     r.status === '見送り' ? '<p style="color:#c00; font-size:13px; margin:0 0 12px;">※この予約はすでに見送り済みです</p>' :
@@ -213,7 +213,7 @@ async function send() {
     return;
   }
 
-  const isInquiry = reservationData.time === '(要相談)';
+  const isInquiry = reservationData.time === '(問い合わせ)';
   const confirmedTimeEl = document.getElementById('confirmedTime');
   if (isInquiry && (!confirmedTimeEl || !confirmedTimeEl.value)) {
     alert('確定する時間を選択してください');
