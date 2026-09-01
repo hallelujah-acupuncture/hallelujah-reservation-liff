@@ -262,10 +262,9 @@ function selectDate(dateStr) {
   timeCard.style.display = 'block';
 
   if (info.status === '問い合わせ') {
-    selectedTime = '(問い合わせ)';
     timeCard.innerHTML =
-      '<p style="font-size:13px; color:var(--text-sub); margin:0 0 12px;">この日は施術場所確保の都合がありますので、送信後の返信をお待ちください。</p>' +
-      renderSymptomForm();
+      '<p style="font-size:14px; line-height:1.6;">この日はご予約フォームからの受付を行っておりません。<br>' +
+      '恐れ入りますが、公式LINEアカウントへ直接メッセージでお問い合わせください。</p>';
   } else {
     const buttons = info.times.map(t =>
       '<button class="time-btn" data-time="' + t + '" onclick="selectTime(\'' + t + '\')">' + t + '</button>'
@@ -285,13 +284,12 @@ function selectTime(time) {
 }
 
 function renderSymptomForm() {
-  const isInquiry = selectedTime === '(問い合わせ)';
   return (
     '<label>お名前</label>' +
     '<input type="text" id="realName" placeholder="例:山田 太郎">' +
     '<label>症状・ご相談内容</label>' +
     '<textarea id="symptom" rows="4" placeholder="例:肩こりがひどく、デスクワーク中心の生活です"></textarea>' +
-    '<button class="submit-btn" onclick="submitReservation()">' + (isInquiry ? 'この内容で問い合わせする' : 'この内容で予約する') + '</button>'
+    '<button class="submit-btn" onclick="submitReservation()">この内容で予約する</button>'
   );
 }
 
@@ -324,17 +322,12 @@ async function submitReservation() {
   const json = await res.json();
 
   if (json.ok) {
-    const isInquiry = selectedTime === '(問い合わせ)';
-    const doneMessage = isInquiry
-      ? 'お問い合わせを受け付けました。<br>担当より改めてご連絡いたします。'
-      : '予約を受け付けました。<br>確定次第LINEでご連絡します。';
     document.getElementById('app').innerHTML =
-      '<div class="status-msg">' + doneMessage + '<br><br>' +
+      '<div class="status-msg">予約を受け付けました。<br>確定次第LINEでご連絡します。<br><br>' +
       '<span style="font-size:12px;">※キャンセルをご希望の場合は、公式アカウントよりご連絡ください。</span></div>' +
       '<button class="submit-btn" onclick="backToCalendar()">予約画面に戻る</button>';
   } else {
-    const isInquiry = selectedTime === '(問い合わせ)';
-    alert((isInquiry ? '問い合わせできませんでした(' : '予約できませんでした(') + json.error + ')。お手数ですが最初からやり直してください。');
+    alert('予約できませんでした(' + json.error + ')。お手数ですが最初からやり直してください。');
     renderCalendarView();
   }
 }
