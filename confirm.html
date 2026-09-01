@@ -88,6 +88,7 @@
 // ==== 設定 ====
 const LIFF_ID = '2010906491-4U8zR5YA';
 const API_URL = 'https://script.google.com/macros/s/AKfycbymXtgcnyMPrj1VFAvcNbmgg_9zU0sg_WL8sAma2WlCK5gRZ07-gt95f7nJUn0vNi_4/exec';
+const HOUR_OPTIONS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
 
 let reservationId = null;
 let reservationData = null;
@@ -163,19 +164,29 @@ async function init() {
 
 function render(template) {
   const r = reservationData;
+  const isInquiry = r.time === '(要相談)';
   const statusNote =
     r.status === '確定' ? '<p style="color:#06883f; font-size:13px; margin:0 0 12px;">※この予約はすでに確定済みです</p>' :
     r.status === '見送り' ? '<p style="color:#c00; font-size:13px; margin:0 0 12px;">※この予約はすでに見送り済みです</p>' :
     r.status !== '仮受付' ? '<p style="color:#c00; font-size:13px; margin:0 0 12px;">※現在のステータス「' + r.status + '」のため操作できません</p>' : '';
+
+  const timeSelectHtml = isInquiry
+    ? '<label>確定する時間を選択してください</label>' +
+      '<select id="confirmedTime" onchange="onConfirmedTimeChange()">' +
+        '<option value="">時間を選択</option>' +
+        HOUR_OPTIONS.map(t => '<option value="' + t + '">' + t + '</option>').join('') +
+      '</select>'
+    : '';
 
   document.getElementById('app').innerHTML =
     '<div class="card">' +
       statusNote +
       '<div class="info-box">' +
         '<div class="name">' + r.displayName + ' 様' + (r.realName ? '(氏名:' + r.realName + ')' : '') + '</div>' +
-        '<div>' + r.date + ' ' + r.time + '〜</div>' +
+        '<div>' + r.date + ' ' + (isInquiry ? '(問い合わせ)' : r.time + '〜') + '</div>' +
         '<div class="symptom">' + r.symptom + '</div>' +
       '</div>' +
+      timeSelectHtml +
       '<label>送信メッセージ(編集可)</label>' +
       '<textarea id="message" rows="10">' + template + '</textarea>' +
       '<div class="btn-row">' +
@@ -185,6 +196,16 @@ function render(template) {
     '</div>';
 }
 
+function onConfirmedTimeChange() {
+  const time = document.getElementById('confirmedTime').value;
+  if (!time) return;
+  const ta = document.getElementById('message');
+  // 「日時:◯月◯日 ◯時〜」の◯時の部分だけを、選んだ時間に差し替える
+  ta.value = ta.value.replace(/(日時:.+?)◯時〜|(日時:.+? )\d{2}:\d{2}〜/, function(match, p1, p2) {
+    return (p1 || p2) + time + '〜';
+  });
+}
+
 async function send() {
   const message = document.getElementById('message').value.trim();
   if (!message) {
@@ -192,13 +213,21 @@ async function send() {
     return;
   }
 
+  const isInquiry = reservationData.time === '(要相談)';
+  const confirmedTimeEl = document.getElementById('confirmedTime');
+  if (isInquiry && (!confirmedTimeEl || !confirmedTimeEl.value)) {
+    alert('確定する時間を選択してください');
+    return;
+  }
+  const confirmedTime = isInquiry ? confirmedTimeEl.value : undefined;
+
   setButtonsBusy('送信中…');
 
   await ensureFreshIdToken();
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'confirm', reservationId: reservationId, message: message, idToken: liff.getIDToken() })
+    body: JSON.stringify({ action: 'confirm', reservationId: reservationId, message: message, confirmedTime: confirmedTime, idToken: liff.getIDToken() })
   });
   const json = await res.json();
 
