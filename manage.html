@@ -256,7 +256,7 @@ function shortTime(time) {
 
 function dayCellClass(info) {
   if (!info) return '';
-  if (info.status === '要相談') return 'consult';
+  if (info.status === '問い合わせ') return 'consult';
   if (info.slots && info.slots.length > 0) return 'open';
   return '';
 }
@@ -288,7 +288,7 @@ function renderCalendar() {
     let entriesHtml = '';
     if (info && info.reservations) {
       entriesHtml = info.reservations.map(r => {
-        const isConsult = r.time === '(要相談)';
+        const isConsult = r.time === '(問い合わせ)';
         const timeLabel = isConsult ? '問合せ' : shortTime(r.time);
         return '<div class="entry-chip' + (isConsult ? ' consult' : '') + '">' +
           '<span class="entry-time">' + timeLabel + '</span> ' +
@@ -329,7 +329,7 @@ function closeModal() {
 /* ===== 個別日設定モーダル ===== */
 function openDayModal(dateStr) {
   const info = daysData[dateStr];
-  const currentStatus = info ? (info.status === '要相談' ? '要相談' : (info.slots && info.slots.length > 0 ? '開放' : '非開放')) : '非開放';
+  const currentStatus = info ? (info.status === '問い合わせ' ? '問い合わせ' : (info.slots && info.slots.length > 0 ? '開放' : '非開放')) : '非開放';
   const openTimes = (info && info.slots) ? info.slots.map(s => s.time) : [];
   const bookedTimes = (info && info.slots) ? info.slots.filter(s => s.status === '埋まり').map(s => s.time) : [];
   const currentVenue = (info && info.venue) ? info.venue : '横浜市旭区若葉台';
@@ -365,7 +365,7 @@ function openDayModal(dateStr) {
     '<div class="status-radio" id="statusRadio">' +
       radioOption('非開放', currentStatus) +
       radioOption('開放', currentStatus) +
-      radioOption('要相談', currentStatus) +
+      radioOption('問い合わせ', currentStatus) +
     '</div>' +
     '<div id="openFields" style="display:' + (currentStatus === '開放' ? 'block' : 'none') + ';">' +
       '<label>予約可能にする時間(1時間ずつ個別に選択)</label>' +
@@ -383,7 +383,7 @@ function openDayModal(dateStr) {
   });
 }
 
-const STATUS_LABEL = { '非開放': '予約不可', '開放': '予約可', '要相談': '問い合わせ' };
+const STATUS_LABEL = { '非開放': '予約不可', '開放': '予約可', '問い合わせ': '問い合わせ可能' };
 
 function radioOption(value, current) {
   const checked = value === current ? 'checked' : '';
