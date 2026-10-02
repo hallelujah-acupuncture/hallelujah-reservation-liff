@@ -269,8 +269,12 @@ function selectDate(dateStr) {
     const buttons = info.times.map(t =>
       '<button class="time-btn" data-time="' + t + '" onclick="selectTime(\'' + t + '\')">' + t + '</button>'
     ).join('');
+    const venueHtml = info.venue
+      ? '<p style="font-size:13px; color:var(--text-sub); margin:0 0 10px;">施術場所:' + info.venue + '</p>'
+      : '';
     timeCard.innerHTML =
       '<label>' + dateStr + ' の空き時間</label>' +
+      venueHtml +
       '<div class="time-list" id="timeList">' + buttons + '</div>' +
       '<div id="formArea"></div>';
   }
@@ -285,10 +289,14 @@ function selectTime(time) {
 
 function renderSymptomForm() {
   return (
-    '<label>お名前</label>' +
+    '<label>お名前(フルネーム)</label>' +
     '<input type="text" id="realName" placeholder="例:山田 太郎">' +
-    '<label>症状・ご相談内容</label>' +
+    '<label>症状・疾患名</label>' +
     '<textarea id="symptom" rows="4" placeholder="例:肩こりがひどく、デスクワーク中心の生活です"></textarea>' +
+    '<p style="font-size:12px; color:var(--text-sub); line-height:1.6; margin:12px 0;">' +
+      '月・木曜日以外は、ご希望日時を送信した時点では予約確定ではありません。<br>' +
+      '施術場所の確保ができ次第、確定のご連絡(または日時変更のご相談)をお送りしますので、少々お待ちください。' +
+    '</p>' +
     '<button class="submit-btn" onclick="submitReservation()">この内容で予約する</button>'
   );
 }
